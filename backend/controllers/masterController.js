@@ -144,45 +144,45 @@ import Admin from "../models/Admin.js";
    Create New Master Admin
 ================================ */
 export const createMasterAdmin = async (req, res) => {
-  try {
-    const { name, email, password } = req.body;
+    try {
+        const { name, email, password } = req.body;
 
-    // Validation
-    if (!name || !email || !password) {
-      return res.status(400).json({
-        msg: "All fields are required",
-      });
+        // Validation
+        if (!name || !email || !password) {
+            return res.status(400).json({
+                msg: "All fields are required",
+            });
+        }
+
+        // Check if admin already exists
+        const exists = await Admin.findOne({ email });
+
+        if (exists) {
+            return res.status(400).json({
+                msg: "Admin already exists with this email",
+            });
+        }
+
+        // Create Admin (password auto-hashed)
+        const admin = await Admin.create({
+            name,
+            email,
+            password,
+        });
+
+        res.status(201).json({
+            msg: "New Master Admin Created ✅",
+            admin: {
+                id: admin._id,
+                name: admin.name,
+                email: admin.email,
+            },
+        });
+
+    } catch (error) {
+        console.error("Create Master Admin Error:", error);
+        res.status(500).json({
+            msg: "Server Error",
+        });
     }
-
-    // Check if admin already exists
-    const exists = await Admin.findOne({ email });
-
-    if (exists) {
-      return res.status(400).json({
-        msg: "Admin already exists with this email",
-      });
-    }
-
-    // Create Admin (password auto-hashed)
-    const admin = await Admin.create({
-      name,
-      email,
-      password,
-    });
-
-    res.status(201).json({
-      msg: "New Master Admin Created ✅",
-      admin: {
-        id: admin._id,
-        name: admin.name,
-        email: admin.email,
-      },
-    });
-
-  } catch (error) {
-    console.error("Create Master Admin Error:", error);
-    res.status(500).json({
-      msg: "Server Error",
-    });
-  }
 };
