@@ -111,13 +111,13 @@ const orderSchema = new mongoose.Schema(
 /* ================================
    Generate Order Number
 ================================ */
-orderSchema.pre("save", function (next) {
-    if (this.orderNumber) return next();
+orderSchema.pre("save", function () {
+    if (this.orderNumber) return;
 
     const random = Math.floor(1000 + Math.random() * 9000);
     this.orderNumber = `QD-${Date.now()}-${random}`;
 
-    next();
+    
 });
 
 
