@@ -187,4 +187,62 @@ export const createMasterAdmin = async (req, res) => {
     }
 };
 
+/* ================================
+   Get All Shops (Master)
+================================ */
+export const getAllShops = async (req, res) => {
+    try {
+        const shops = await Shop.find().sort({ createdAt: -1 });
 
+        res.json(shops);
+    } catch (error) {
+        console.error("Get Shops Error:", error);
+        res.status(500).json({ msg: "Server Error" });
+    }
+};
+
+
+/* ================================
+   Toggle Shop Status
+================================ */
+export const toggleShopStatus = async (req, res) => {
+    try {
+        const shop = await Shop.findById(req.params.id);
+
+        if (!shop) {
+            return res.status(404).json({ msg: "Shop not found" });
+        }
+
+        shop.status = shop.status === "active" ? "blocked" : "active";
+
+        await shop.save();
+
+        res.json({
+            msg: "Shop status updated",
+            status: shop.status,
+        });
+    } catch (error) {
+        console.error("Toggle Shop Error:", error);
+        res.status(500).json({ msg: "Server Error" });
+    }
+};
+
+/* ================================
+   Delete Shop
+================================ */
+export const deleteShop = async (req, res) => {
+    try {
+        const shop = await Shop.findById(req.params.id);
+
+        if (!shop) {
+            return res.status(404).json({ msg: "Shop not found" });
+        }
+
+        await shop.deleteOne();
+
+        res.json({ msg: "Shop deleted successfully" });
+    } catch (error) {
+        console.error("Delete Shop Error:", error);
+        res.status(500).json({ msg: "Server Error" });
+    }
+};

@@ -187,3 +187,94 @@ export const updateOrderStatus = async (req, res) => {
         res.status(500).json({ msg: "Server Error" });
     }
 };
+
+/* ================================
+   Advanced Shop Analytics
+================================ */
+export const getShopAnalytics = async (req, res) => {
+    try {
+        const shopId = req.user.shopId;
+
+        const paidOrders = await Order.find({
+            shopId,
+            paymentStatus: "paid",
+        });
+
+        const totalOrders = paidOrders.length;
+
+        const totalRevenue = paidOrders.reduce(
+            (acc, order) => acc + order.totalAmount,
+            0
+        );
+
+        // Weekly Revenue (Last 7 Days)
+        const weeklyRevenue = await Order.aggregate([
+            {
+                $match: {
+                    shopId,
+                    paymentStatus: "paid",
+                    createdAt: {
+                        $gte: new Date(
+                            new Date().setDate(new Date().getDate() - 7)
+                        ),
+                    },
+                },
+            },
+            {
+                $group: {
+                    _id: {
+                        $dayOfMonth: "$createdAt",
+                    },
+                    revenue: { $sum: "$totalAmount" },
+                },
+            },
+            { $sort: { _id: 1 } },
+        ]);
+
+        // Monthly Revenue (Current Year grouped by month)
+        const monthlyRevenue = await Order.aggregate([
+            {
+                $match: {
+                    shopId,
+                    paymentStatus: "paid",
+                },
+            },
+            {
+                $group: {
+                    _id: { $month: "$createdAt" },
+                    revenue: { $sum: "$totalAmount" },
+                },
+            },
+            { $sort: { _id: 1 } },
+        ]);
+
+        // Yearly Revenue
+        const yearlyRevenue = await Order.aggregate([
+            {
+                $match: {
+                    shopId,
+                    paymentStatus: "paid",
+                },
+            },
+            {
+                $group: {
+                    _id: { $year: "$createdAt" },
+                    revenue: { $sum: "$totalAmount" },
+                },
+            },
+            { $sort: { _id: 1 } },
+        ]);
+
+        res.json({
+            totalOrders,
+            totalRevenue,
+            weeklyRevenue,
+            monthlyRevenue,
+            yearlyRevenue,
+        });
+
+    } catch (error) {
+        console.error("Analytics Error:", error);
+        res.status(500).json({ msg: "Server Error" });
+    }
+};

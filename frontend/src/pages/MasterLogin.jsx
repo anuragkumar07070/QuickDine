@@ -1,19 +1,19 @@
 import { useState } from "react";
-import API from "../api/api.js";
+import API from "../api/api";
 
-function LoginPage() {
+function MasterLogin() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
     const login = async () => {
         try {
-            const res = await API.post("/auth/shop/login", {
+            const res = await API.post("/auth/admin/login", {
                 email,
                 password,
             });
-
-            localStorage.setItem("token", res.data.token);
-            window.location.href = "/dashboard";
+            localStorage.removeItem("token");
+            localStorage.setItem("masterToken", res.data.token);
+            window.location.href = "/master/dashboard";
         } catch (err) {
             alert("Invalid Credentials");
         }
@@ -23,7 +23,7 @@ function LoginPage() {
         <div className="flex items-center justify-center h-screen bg-gray-100">
             <div className="bg-white p-6 rounded-xl shadow w-80">
                 <h1 className="text-xl font-bold mb-4 text-center">
-                    Shop Login
+                    Master Login
                 </h1>
 
                 <input
@@ -51,4 +51,4 @@ function LoginPage() {
     );
 }
 
-export default LoginPage;
+export default MasterLogin;
